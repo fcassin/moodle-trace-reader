@@ -5,7 +5,7 @@ A web interface and REST API to extract knowledge from moodle logs
 
 
 How to create the database
-==========================
+--------------------------
 
 To create the database, using postgres:
 
