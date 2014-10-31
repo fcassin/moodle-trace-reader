@@ -1,7 +1,9 @@
 moodle-trace-reader
 ===================
 
-A web interface and REST API to extract knowledge from moodle logs
+A small, specialised ETL, written in Node.js to transform moodle logs into traces. Traces can then be accessed and analyzed by dimensions.
+
+Logs are pulled from the mySQL database, transformed, and injected into a postgres database with a new schema.
 
 
 How to create the database
