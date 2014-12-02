@@ -468,6 +468,6 @@ function extractLogs() {
 	connection.end();	
 }
 
-// TODO Itérer sur tous les logs
-// Utilisation des vues sur les ressources uniquement pour l'instant pour construire le premier indicateur
+// TODO Itérer sur tous les logs Utilisation des vues sur les ressources
+// uniquement pour l'instant pour construire le premier indicateur
 extractLogs();
