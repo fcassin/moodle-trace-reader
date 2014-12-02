@@ -9,21 +9,14 @@ var dailyFrequency = { frequency : 'daily' };
 var weeklyFrequency = { frequency : 'weekly' };
 
 aggregate.countByUniqueUserAndDate = function(frequency, callback) {
-	console.log('Frequency : ' + frequency.frequency);
+	console.log(aggregationType + ', frequency : ' + frequency.frequency);
 
 	var timeCalculation, connection, obselModel;
 
 	connection = mongo.createMongoConnection();
 	obselModel = mongo.getObselModel(connection);
 
-	if (frequency.frequency === 'daily') {
-		timeCalculation = {
-			$subtract : [
-				"$begin", 
-				{ $mod : ["$begin", 86400000 ] } 
-			]
-    };
-	} else if (frequency.frequency === 'weekly') {
+	if (frequency.frequency === 'weekly') {
 		// Epoch time was a thursday, we need to roll back to monday
 		timeCalculation = { 
 			$add : [

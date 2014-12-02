@@ -32,7 +32,7 @@ async.series([
 			});			
 		},
 		function findResults(callback) {
-			aggregateUsersByDate.findDailyResults(function(err, results) {
+			aggregateLoginsByDate.findHourlyResults(function(err, results) {
 				if (err) callback(err);
 
 				console.log('Results : ' + results);
