@@ -121,41 +121,6 @@ function setCategoryInformation(category, depth, obsel, callback) {
 			callback(); 
 		}	
 	}
-
-
-		
-
-
-	/*if (row.category) {
-		console.log(row.depth);
-		console.log(row.category);
-		if (row.depth == 1) {
-			console.log('depth 1');
-			obsel.course.category1 = { 
-				moodleId : row.category_id,
-				name : row.category_name
-			}
-		} else if (row.depth == 2) {
-			console.log('depth 2');
-			obsel.course.category2 = { 
-				moodleId : row.category_id,
-				name : row.category_name
-			}
-		} else if (row.depth == 3) {
-			console.log('depth 3');
-			obsel.course.category3 = { 
-				moodleId : row.category_id,
-				name : row.category_name
-			}
-		} else if (row.depth == 4) {
-			console.log('depth 4');
-			obsel.course.category4 = { 
-				moodleId : row.category_id,
-				name : row.category_name
-			}
-		}
-	}*/
-
 }
 
 function extractLog(row, connection, callback) {
@@ -165,7 +130,10 @@ function extractLog(row, connection, callback) {
 	if (row.username === 'guest') {
 		username = row.username;
 	} else {
-		username = shaHash(row.username);
+		// We choose not to hide student ids immediatly for now
+		// However, it MUST be done for the final extraction
+		//username = shaHash(row.username);
+		username = row.username;
 	}
 
 	var dateInMillis = dateInSecToDateInMillis(row.time);
