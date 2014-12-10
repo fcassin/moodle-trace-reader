@@ -48,12 +48,13 @@ async.series([
 			});			
 		},
 		function findResults(callback) {
-			//aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
-				//'119fc8dcc7d2c7bdfff06d1446b714941429d6d9',
-			orderStudentsByCategory.findOrComputeStudentsByCategory(
+			aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
+				'119fc8dcc7d2c7bdfff06d1446b714941429d6d9',
+			//orderStudentsByCategory.findOrComputeStudentsByCategory(
 				377,
-				1412294400000,
-				1412467200000,
+				1412150400000,
+				1412208000000,
+				//1412467200000,
 				function(err, results) {
 					if (err) callback(err);
 
