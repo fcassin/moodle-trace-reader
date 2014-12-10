@@ -98,7 +98,7 @@ ktbsMongo.findResults = function(functionName, args, callback) {
 		}
 	}
 
-	console.log(JSON.stringify(filter));
+	//console.log(JSON.stringify(filter));
 
 	obselModel.find(filter, function(err, results) {
 		if (err) return callback(err);

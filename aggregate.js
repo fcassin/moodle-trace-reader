@@ -9,7 +9,7 @@ var async = require('async');
 
 async.series([
 		function clearPreviousResults(callback) {
-			async.parallel([
+			async.parallel([/*
 				function clearLogins(callback) {
 					aggregateLoginsByDate.clearPreviousResults(callback);
 				},
@@ -21,14 +21,14 @@ async.series([
 				}, function clearOrderedCategories(callback) {
 					orderCategoriesByLogs.clearPreviousResults(callback);
 				}
-			], function allCleared(err) {
+			*/], function allCleared(err) {
 				if (err) callback(err);
 				console.log('All cleared');
 				callback();
 			});
 		},
 		function aggregateResults(callback) {
-			async.parallel([
+			async.parallel([/*
 				function aggregateLogins(callback) {
 					aggregateLoginsByDate.groupByDateThenStore(callback);
 				},
@@ -41,7 +41,7 @@ async.series([
 				function orderCategories(callback) {
 					orderCategoriesByLogs.orderCategoriesByLogsThenStore(callback);
 				}
-			], function aggregationsDone(err) {
+			*/], function aggregationsDone(err) {
 				if (err) callback(err);
 				console.log('All aggregations were successful');
 				callback();
@@ -51,13 +51,16 @@ async.series([
 			//aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
 				//'119fc8dcc7d2c7bdfff06d1446b714941429d6d9',
 			orderStudentsByCategory.findOrComputeStudentsByCategory(
-				377, 
+				377,
+				1412294400000,
+				1412467200000,
 				function(err, results) {
-				if (err) callback(err);
+					if (err) callback(err);
 
-				console.log('Results : ' + JSON.stringify(results[0].results, null, 2));
-				callback();
-			});
+					console.log('Results : ' + JSON.stringify(results[0].results, null, 2));
+					callback();
+				}
+			);
 		}
 	], function handleErrors(err) {
 		if (err) throw err;
