@@ -44,8 +44,59 @@ function dateInSecToDateInMillis(date) {
 	return dateInMillis;
 }
 
-function loadCategoryInformation(category, depth, callback) {
+// A quoi correspond le contenu de la table file récupéré avec la premiere requete ?
+// On dirait une historisation de plusieurs versions d'un meme fichier
+// Voir la ligne de log d'id 92935580
+function setResourceInformation(cmid, info, obsel, callback) {
+	var resource = { deleted : false };
 
+	var query1 = 'SELECT f.id, f.filepath, f.filename, f.filesize, ' + 
+										 'f.mimetype, f.author ' +
+							'FROM mdl_files f, mdl_context c, mdl_course_modules cm ' +
+							'WHERE f.contextid = c.id ' +
+							'AND f.filename <> \'.\' ' +
+							'AND c.instanceid = cm.id ' +
+							'AND c.contextlevel = 70 ' +
+							'AND cm.id = ' + cmid + ' ' +
+							'ORDER BY f.id DESC';
+
+	var query2 = 'SELECT * FROM mdl_resource WHERE id = ' + info;
+
+	var connection = createMySqlConnection();
+	connection.connect();
+	connection.query(
+		query1,
+	  function(err, rows1, fields) {
+	 		if (err) return callback(err);
+
+			if (rows1.length > 0) {
+				connection.query(
+					query2,
+					function(err, rows2, fields) {
+						var fileInfoRow = rows1[0];
+						var resourceNameRow = rows2[0];
+
+						resource.displayName = resourceNameRow.name;
+						resource.fileName = fileInfoRow.filename;
+						resource.mimeType = fileInfoRow.mimetype;
+						resource.author = fileInfoRow.author;
+						resource.fileSize = fileInfoRow.filesize;
+						resource.moodleId = fileInfoRow.id;
+
+						obsel.resource = resource;
+
+						connection.end();
+						callback();
+					}
+				);
+			} else {
+				resource.deleted = true;
+				obsel.resource = resource;
+				connection.end();
+				callback();
+			}
+	  }
+	);
 }
 
 function setCategoryInformation(category, depth, obsel, callback) {
@@ -156,6 +207,12 @@ function extractLog(row, connection, callback) {
 		// If unavailable, load it from database and store it in memory
 		function categoryInformation(callback) {
 			setCategoryInformation(row.category, row.depth, obsel, callback);		
+		}, function resourceInformation(callback) {
+			if (row.module === 'resource') {
+				setResourceInformation(row.cmid, row.info, obsel, callback);
+			} else {
+				callback();
+			}
 		}, function saveObsel(callback) {
 			obsel.save(function(err) {
 				if (err) return callback(err);
@@ -221,7 +278,7 @@ function extractLogBatch(mostRecent, callback) {
 					 	       //'WHERE log.action = \'login\' ' +
 					 	       //'AND log.module = \'user\' ' +
 					 	       'WHERE log.id > ' + mostRecent.id + ' ' + 
-					 	       'ORDER BY log.id asc LIMIT 100000) AS log ' +
+					 	       'ORDER BY log.id asc LIMIT 10000) AS log ' +
 					         'JOIN mdl_course course ON course.id = log.course ' +
 					         'JOIN mdl_user user ON user.id = log.userid ' +
 					         'LEFT JOIN mdl_course_categories AS cc1 ON course.category = cc1.id',
@@ -260,7 +317,7 @@ function extractLogs() {
 		console.log(insertedRows + ' rows inserted.');
 
 		if (insertedRows > 0) {
-			extractLogs();
+			//extractLogs();
 		}
 	});	
 }

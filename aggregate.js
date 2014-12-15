@@ -9,7 +9,7 @@ var async = require('async');
 
 async.series([
 		function clearPreviousResults(callback) {
-			async.parallel([/*
+			async.parallel([
 				function clearLogins(callback) {
 					aggregateLoginsByDate.clearPreviousResults(callback);
 				},
@@ -21,14 +21,14 @@ async.series([
 				}, function clearOrderedCategories(callback) {
 					orderCategoriesByLogs.clearPreviousResults(callback);
 				}
-			*/], function allCleared(err) {
+			], function allCleared(err) {
 				if (err) callback(err);
 				console.log('All cleared');
 				callback();
 			});
 		},
 		function aggregateResults(callback) {
-			async.parallel([/*
+			async.parallel([
 				function aggregateLogins(callback) {
 					aggregateLoginsByDate.groupByDateThenStore(callback);
 				},
@@ -41,7 +41,7 @@ async.series([
 				function orderCategories(callback) {
 					orderCategoriesByLogs.orderCategoriesByLogsThenStore(callback);
 				}
-			*/], function aggregationsDone(err) {
+			], function aggregationsDone(err) {
 				if (err) callback(err);
 				console.log('All aggregations were successful');
 				callback();
@@ -49,7 +49,7 @@ async.series([
 		},
 		function findResults(callback) {
 			aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
-				'119fc8dcc7d2c7bdfff06d1446b714941429d6d9',
+				'e1b90207ee712587d29d4fbf25825a8e745d5ef1',
 			//orderStudentsByCategory.findOrComputeStudentsByCategory(
 				377,
 				1412150400000,
