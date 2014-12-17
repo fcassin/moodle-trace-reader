@@ -191,9 +191,11 @@ function extractLog(row, connection, callback) {
 
 	var obselModel = ktbsMongo.getObselModel(connection);
 
+	var action = row.action.replace(' ', '_');
+
 	var obsel = new obselModel({
 		/*'_serverid' : generate_uuid(),*/
-		'@type' : row.module + '_' + row.action,
+		'@type' : row.module + '_' + action,
 		begin : dateInMillis,
 		end : dateInMillis,
 		subject : username,
@@ -317,7 +319,7 @@ function extractLogs() {
 		console.log(insertedRows + ' rows inserted.');
 
 		if (insertedRows > 0) {
-			//extractLogs();
+			extractLogs();
 		}
 	});	
 }

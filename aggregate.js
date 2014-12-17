@@ -4,11 +4,12 @@ var aggregateCategoryByDate = require('./aggregate_logs_by_category_and_date');
 var aggregateUserLogsByModuleAndDate = require('./aggregate_logs_by_user_module_and_date');
 var orderCategoriesByLogs = require('./order_categories_by_logs');
 var orderStudentsByCategory = require('./order_students_by_category');
+var finder = require('./find_logs');
 
 var async = require('async');
 
 async.series([
-		function clearPreviousResults(callback) {
+		/*function clearPreviousResults(callback) {
 			async.parallel([
 				function clearLogins(callback) {
 					aggregateLoginsByDate.clearPreviousResults(callback);
@@ -46,9 +47,16 @@ async.series([
 				console.log('All aggregations were successful');
 				callback();
 			});			
-		},
+		},*/	
 		function findResults(callback) {
-			aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
+			finder.findBySecondLevelModule(381, function(err, results) {
+				if (err) callback(err);
+
+				console.log(results.length + ' results found.');
+				console.log(JSON.stringify(results, null, 2));
+				callback();
+			});
+			/*aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
 				'e1b90207ee712587d29d4fbf25825a8e745d5ef1',
 			//orderStudentsByCategory.findOrComputeStudentsByCategory(
 				377,
@@ -61,7 +69,8 @@ async.series([
 					console.log('Results : ' + JSON.stringify(results[0].results, null, 2));
 					callback();
 				}
-			);
+			);*/
+			
 		}
 	], function handleErrors(err) {
 		if (err) throw err;
