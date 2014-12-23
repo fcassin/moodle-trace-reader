@@ -38,15 +38,11 @@ aggregate.findByFirstLevelModule = function(moduleId, callback) {
 }
 
 // TODO Filter by day and iterate over the days
-aggregate.findBySecondLevelModule = function(moduleId, callback) {
+aggregate.findBySecondLevelModule = function(moduleId, firstDate, lastDate, callback) {
 	var args = {};
   args['course.category2.moodleId'] = moduleId;
-
-  var novemberFirst = new Date(2014,10,1);
-  var novemberSecond = new Date(2014,10,2);
-
-  args['begin'] = { $gt : novemberFirst.getTime() };
-  args['end'] = { $lt : novemberSecond.getTime() };
+  args['begin'] = { $gt : firstDate.getTime() };
+  args['end'] = { $lt : lastDate.getTime() };
 
 	aggregate.findLogs(args, function(err, results) {
 		if (err) return callback(err);

@@ -9,7 +9,7 @@ var finder = require('./find_logs');
 var async = require('async');
 
 async.series([
-		/*function clearPreviousResults(callback) {
+		function clearPreviousResults(callback) {
 			async.parallel([
 				function clearLogins(callback) {
 					aggregateLoginsByDate.clearPreviousResults(callback);
@@ -47,16 +47,9 @@ async.series([
 				console.log('All aggregations were successful');
 				callback();
 			});			
-		},*/	
+		},	
 		function findResults(callback) {
-			finder.findBySecondLevelModule(381, function(err, results) {
-				if (err) callback(err);
-
-				console.log(results.length + ' results found.');
-				console.log(JSON.stringify(results, null, 2));
-				callback();
-			});
-			/*aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
+			aggregateUserLogsByModuleAndDate.findOrComputeUserLogs(
 				'e1b90207ee712587d29d4fbf25825a8e745d5ef1',
 			//orderStudentsByCategory.findOrComputeStudentsByCategory(
 				377,
@@ -69,8 +62,7 @@ async.series([
 					console.log('Results : ' + JSON.stringify(results[0].results, null, 2));
 					callback();
 				}
-			);*/
-			
+			);
 		}
 	], function handleErrors(err) {
 		if (err) throw err;

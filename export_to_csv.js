@@ -2,9 +2,90 @@ var finder = require('./find_logs');
 
 var async = require('async');
 var fileSystem = require('fs');
+var crypto = require('crypto');
+
+var encoding = 'UTF-8';
+
+// Creates a sha hash from parameter toHash
+function shaHash(toHash) {
+	var	shaSum = crypto.createHash('sha1');
+	shaSum.update(toHash);
+	var digest = shaSum.digest('hex');
+	return digest;
+}
+
+function buildDateArray(fromDate, toDate) {
+	var array = [];
+	var currentDate = fromDate;
+
+	var index = 0;
+	while (currentDate <= toDate) {
+		array[index] = currentDate;
+		index += 1;
+		currentDate = new Date(currentDate.getFullYear(),
+													 currentDate.getMonth(),
+													 currentDate.getDate() + 1);
+	}
+
+	return array;
+}
+
+function exportToCSV() {
+	var firstDay = new Date(2014,7,15);
+	var lastDay = new Date(2014,11,31);
+  //var decemberThirtyFirst = new Date(2014,11,1);
+
+  var dateArray = buildDateArray(firstDay, lastDay);
+  var currentYear = firstDay.getFullYear();
+  var currentMonth = firstDay.getMonth();
+  var writeStream = initCSVFile(currentYear, currentMonth);
+
+  async.eachSeries(dateArray, function(date, callback) {
+  	console.log(date);
+
+  	var iteratingYear = date.getFullYear();
+  	var iteratingMonth = date.getMonth();
+
+  	if (iteratingMonth > currentMonth || iteratingYear > currentYear) {
+  		currentYear = iteratingYear;
+  		currentMonth = iteratingMonth;
+
+  		writeStream = initCSVFile(currentYear, currentMonth);
+  	}
+
+  	var tomorrow = new Date(date.getFullYear(),
+  													date.getMonth(),
+  													date.getDate() + 1);
+
+  	finder.findBySecondLevelModule(381, date, tomorrow, function(err, results) {
+  		if (err) return callback(err);
+
+  		if (results.length > 0) {
+  			console.log('Writing results to csv file');
+
+	  		writeResultsToCSV(writeStream, results, function(err, results) {
+	  			console.log('Results written');
+	  			callback();
+	  		});
+  		} else {
+  			console.log('No results');
+  			callback();
+  		}
+  	})
+  }, function then(err) {
+  	if (err) throw err;
+
+		console.log('Done');
+  })
+}
+
+exportToCSV();
 
 function findPACESResults(callback) {
-	finder.findBySecondLevelModule(381, function(err, results) {
+	var novemberFirst = new Date(2014,10,1);
+  var novemberSecond = new Date(2014,10,2);
+
+	finder.findBySecondLevelModule(381, novemberFirst, novemberSecond, function(err, results) {
 		if (err) callback(err);
 
 		console.log(results.length + ' results found.');
@@ -49,7 +130,18 @@ function buildCSVHeader() {
 	buffer = buffer + 'resource.fileName;';
 	buffer = buffer + 'resource.displayName;';
 	buffer = buffer + 'resource.mimeType;';
-	buffer = buffer + 'resource.fileSize';
+	buffer = buffer + 'resource.fileSize;';
+
+	buffer = buffer + 'moodleId;';
+	buffer = buffer + 'deleted;';
+	buffer = buffer + 'intro;';
+	buffer = buffer + 'name;';
+	buffer = buffer + 'type;';
+	buffer = buffer + 'discussionMoodleId;';
+	buffer = buffer + 'discussionName;';
+	buffer = buffer + 'postMoodleId;';
+	buffer = buffer + 'postSubject;';
+	buffer = buffer + 'postMessage';
 
 	var buffer = buffer + '\n';
 	return buffer;
@@ -73,6 +165,90 @@ function formatCategoryToCSV(result, category, buffer) {
 	return buffer;
 }
 
+function formatForumToCSV(result, buffer) {
+	var moodleId = '';
+	var deleted = '';
+	var intro = '';
+	var name = '';
+	var type = '';
+	var discussionName = '';
+	var discussionMoodleId = '';
+	var postMoodleId = '';
+	var postSubject = '';
+	var postMessage = '';
+
+	var forum = result.forum;
+
+	if (forum != undefined && forum != null && forum != 'null') {
+		deleted = forum.deleted;
+
+		if (!deleted) {
+			moodleId = forum.moodleId;
+			intro = forum.intro;
+			name = forum.name;
+			type = forum.type;
+
+			intro = intro.name;
+			if (intro != undefined) {
+				intro = intro.replace(';', '.,');
+			} else {
+				intro = '';
+			}
+
+			var discussion = forum.discussion;
+
+			if (discussion != undefined) {
+				discussionMoodleId = discussion.moodleId;
+				discussionName = discussion.name;
+				discussionName = discussionName.replace(';', '.,');
+
+				var post = discussion.post;
+				
+				if (post != undefined) {
+
+					postMoodleId = post.moodleId;
+					postSubject = post.subject;
+					postSubject = postSubject.replace(';', '.,');
+					postMessage = post.message;
+					postMessage = postMessage.replace(';', '.,');
+					postMessage = postMessage.replace(/\r?\n/g, '');
+				}
+			}
+		}
+	}
+	buffer = buffer + moodleId;
+	buffer = buffer + ';';
+
+	buffer = buffer + deleted;
+	buffer = buffer + ';';
+
+	buffer = buffer + intro;
+	buffer = buffer + ';';
+
+	buffer = buffer + name;
+	buffer = buffer + ';';
+
+	buffer = buffer + type;
+	buffer = buffer + ';';
+
+	buffer = buffer + discussionMoodleId;
+	buffer = buffer + ';';
+
+	buffer = buffer + discussionName;
+	buffer = buffer + ';';
+
+	buffer = buffer + postMoodleId;
+	buffer = buffer + ';';
+
+	buffer = buffer + postSubject;
+	buffer = buffer + ';';
+
+	buffer = buffer + postMessage;
+	buffer = buffer + ';';
+
+	return buffer;
+}
+
 function formatResourceToCSV(result, buffer) {
 	var moodleId = '';
 	var deleted = '';
@@ -85,9 +261,9 @@ function formatResourceToCSV(result, buffer) {
 	var resource = result.resource;
 
 	if (resource != undefined && resource != null && resource != 'null') {
-		moodleId = resource.moodleId;
 		deleted = resource.deleted;
 		if (!deleted) {
+			moodleId = resource.moodleId;
 			deleted = resource.deleted;
 			author = resource.author;
 			fileName = resource.fileName;
@@ -135,7 +311,12 @@ function formatToCSV(result) {
 	buffer = buffer + result.end.toString();
 	buffer = buffer + ';';
 
-	buffer = buffer + result.subject;
+	var subject = result.subject;
+	if (result.subject != 'guest') {
+		subject = shaHash(subject);
+	}
+
+	buffer = buffer + subject;
 	buffer = buffer + ';';
 
 	buffer = buffer + result.student;
@@ -157,17 +338,22 @@ function formatToCSV(result) {
 
 	buffer = formatResourceToCSV(result, buffer);
 
+	buffer = formatForumToCSV(result, buffer);
+
 	buffer = buffer + '\n';
 	return buffer;
 }
 
-function writeResultsToCSV(results, callback) {
+function initCSVFile(year, month) {
+	var writeStream = fileSystem.createWriteStream('./output-' + year + '-' + month + '.csv');
+	writeStream.write(buildCSVHeader(), encoding);
+	return writeStream;
+}
+
+function writeResultsToCSV(writeStream, results, callback) {
 	var length = results.length;
-	var writeStream = fileSystem.createWriteStream('./test.csv');
-	var encoding = 'UTF-8';
 
 	if (length > 0) {
-		writeStream.write(buildCSVHeader(), encoding);
 		
 		write();
 		function write() {
@@ -189,8 +375,8 @@ function writeResultsToCSV(results, callback) {
 	}
 }
 
-findPACESResults(function(err, results) {
+/*findPACESResults(function(err, results) {
 	writeResultsToCSV(results, function() {
 		console.log('Done');
 	})
-});
+});*/

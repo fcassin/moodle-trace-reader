@@ -44,6 +44,111 @@ function dateInSecToDateInMillis(date) {
 	return dateInMillis;
 }
 
+function setForumInformation(info, obsel, callback, forum) {
+	if (forum === undefined) {
+		forum = {};
+	}
+	obsel.forum = forum;
+
+	//console.log('handling forum');
+
+	var query = 'SELECT f.id, f.course, f.type, f.name, f.intro ' +
+							'FROM mdl_forum f ' +
+							'WHERE f.id = ' + info;
+
+	var connection = createMySqlConnection();
+	connection.connect();
+	connection.query(query, function(err, rows, fields) {
+		if (err) return callback(err);
+
+		if (rows.length > 0) {
+			var forumRow = rows[0];
+
+			forum.moodleId = forumRow.id;
+			forum.course = forumRow.course;
+			forum.type = forumRow.type;
+			forum.name = forumRow.name;
+			forum.intro = forumRow.intro;
+			forum.deleted = false;
+		} else {
+			//console.log('deleted forum');
+			forum.deleted = true;
+		}
+
+		connection.end();
+		callback();
+	});
+}
+
+function setForumDiscussionInformation(info, obsel, callback, discussion) {
+	var forum = {};
+	if (discussion === undefined) {
+		discussion = {};
+	}
+	forum.discussion = discussion;
+
+	//console.log('handling discussion');
+
+	var discussionQuery = 'SELECT d.id, d.forum, d.name ' +
+												'FROM mdl_forum_discussions d ' +
+												'WHERE d.id = ' + info;
+
+	var connection = createMySqlConnection();
+	connection.connect();
+	connection.query(discussionQuery, function(err, rows, fields) {
+		if (err) return callback(err);
+
+		if (rows.length > 0) {
+			var discussionRow = rows[0];
+
+			discussion.moodleId = discussionRow.id;
+			discussion.name = discussionRow.name;
+
+			setForumInformation(discussionRow.forum, obsel, callback, forum);
+			connection.end();
+		} else {
+			//console.log('deleted discussion');
+			discussion.deleted = true;
+			connection.end();
+			callback();
+		}
+	});
+}
+
+function setForumPostInformation(info, obsel, callback) {
+	var discussion = {};
+	var post = {};
+	discussion.post = post;
+
+	//console.log('handling post');
+
+	var postQuery = 'SELECT p.id, p.discussion, p.subject, p.message ' +
+												'FROM mdl_forum_posts p ' +
+												'WHERE p.id = ' + info;
+
+	var connection = createMySqlConnection();
+	connection.connect();
+	connection.query(postQuery, function(err, rows, fields) {
+		if (err) return callback(err);
+
+		if (rows.length > 0) {
+			var postRow = rows[0];
+
+			post.moodleId = postRow.id;
+			post.subject = postRow.subject;
+			post.message = postRow.message;
+
+			setForumDiscussionInformation(postRow.discussion, obsel, callback, discussion);
+			connection.end();
+		} else {
+			//console.log('deleted post');
+			post.deleted = true;
+			connection.end();
+			callback();
+		}
+	});
+}
+
 // A quoi correspond le contenu de la table file récupéré avec la premiere requete ?
 // On dirait une historisation de plusieurs versions d'un meme fichier
 // Voir la ligne de log d'id 92935580
@@ -213,6 +318,20 @@ function extractLog(row, connection, callback) {
 			if (row.module === 'resource') {
 				setResourceInformation(row.cmid, row.info, obsel, callback);
 			} else {
+				callback();
+			}
+		}, function forumInformation(callback) {
+			if (row.module === 'forum') {
+				if (row.action === 'view forum') {
+					setForumInformation(row.info, obsel, callback);
+				} else if (row.action === 'view discussion' || row.action === 'add discussion') {
+					setForumDiscussionInformation(row.info, obsel, callback);
+				} else if (row.action === 'add post' || row.action === 'update post') {
+					setForumPostInformation(row.info, obsel, callback);
+				} else {
+					callback();
+				}
+			}	else {
 				callback();
 			}
 		}, function saveObsel(callback) {

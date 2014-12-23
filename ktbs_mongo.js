@@ -4,8 +4,6 @@ var mongoose = require('mongoose');
 var mongooseLong = require('mongoose-long')(mongoose);
 var uuid = require('node-uuid');
 
-// TODO Handle connections here ? Singleton ? Pool ?
-
 var mongoURI = 'mongodb://localhost/ktbs';
 
 var schemaTypes = mongoose.Schema.Types;
@@ -22,6 +20,7 @@ ktbsMongo.obselSchema = new mongoose.Schema({
 	attr : { type : Object, default : undefined },
 	course : { type: Object, default : undefined },
 	resource : { type: Object, default : undefined },
+	forum : { type: Object, default : undefined },
 	added : { type : schemaTypes.Long, default : function() { 
 		var now = new Date(); return now.getTime() } }
 }, { collection : 'trace' });
