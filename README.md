@@ -67,6 +67,3 @@ export_to_csv.js
 Ce fichier permet d'extraire l'intégralité des logs contenus dans la base MongoDB pour la promotion PACES du jeu de données exemple, l'Université de Nantes.
 
 Il utilise simplement le finder de find_logs.js et formatte les données au format CSV, créant un fichier pour chaque mois de log identifié.
-export_to_csv.js
-----------------
-
