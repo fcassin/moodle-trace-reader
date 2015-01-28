@@ -190,7 +190,7 @@ function formatForumToCSV(result, buffer) {
 
 			intro = intro.name;
 			if (intro != undefined) {
-				intro = intro.replace(';', '.,');
+				intro = intro.replace(/;/g, '.,');
 			} else {
 				intro = '';
 			}
@@ -200,7 +200,7 @@ function formatForumToCSV(result, buffer) {
 			if (discussion != undefined) {
 				discussionMoodleId = discussion.moodleId;
 				discussionName = discussion.name;
-				discussionName = discussionName.replace(';', '.,');
+				discussionName = discussionName.replace(/;/g, '.,');
 
 				var post = discussion.post;
 				
@@ -208,9 +208,9 @@ function formatForumToCSV(result, buffer) {
 
 					postMoodleId = post.moodleId;
 					postSubject = post.subject;
-					postSubject = postSubject.replace(';', '.,');
+					postSubject = postSubject.replace(/;/g, '.,');
 					postMessage = post.message;
-					postMessage = postMessage.replace(';', '.,');
+					postMessage = postMessage.replace(/;/g, '.,');
 					postMessage = postMessage.replace(/\r?\n/g, '');
 				}
 			}
@@ -244,7 +244,6 @@ function formatForumToCSV(result, buffer) {
 	buffer = buffer + ';';
 
 	buffer = buffer + postMessage;
-	buffer = buffer + ';';
 
 	return buffer;
 }
